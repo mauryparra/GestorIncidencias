@@ -2,30 +2,22 @@ package com.meli.itacademy;
 
 import static spark.Spark.*;
 import com.google.gson.Gson;
+
+import com.meli.itacademy.models.Proyecto;
 import com.meli.itacademy.models.Usuario;
 import com.meli.itacademy.server.StandardResponse;
 import com.meli.itacademy.server.StatusResponse;
+import com.meli.itacademy.services.ProyectoServiceMapImpl;
 import com.meli.itacademy.services.UsuarioServiceMapImpl;
 
 public class GestorIncidenciasMain {
 
+    private static final UsuarioServiceMapImpl usuarioService = new UsuarioServiceMapImpl();
+    private static final ProyectoServiceMapImpl proyectoService = new ProyectoServiceMapImpl();
+
     public static void main(String[] args) {
-
-        final UsuarioServiceMapImpl usuarioService = new UsuarioServiceMapImpl();
-
         // Setup de datos iniciales
-
-        String[] nombres = {"Mauricio", "Juan", "Maria"};
-        String[] apellidos = {"Parra", "Gonzalez,", "Martinez"};
-
-        for (int i = 0; i < 3; i++)
-        {
-            Usuario usuario = new Usuario();
-            usuario.setNombre(nombres[i]);
-            usuario.setApellido(apellidos[i]);
-
-            usuarioService.addUsuario(usuario);
-        }
+        setTestData();
 
         // Obtener todos los usuarios
         get("/usuario", (request, response) -> {
@@ -58,11 +50,11 @@ public class GestorIncidenciasMain {
             response.type("application/json");
 
             Usuario usuarioEditado = new Gson().fromJson(request.body(), Usuario.class);
-            Usuario usuarioModificar = usuarioService.editUsuario(usuarioEditado);
+            Usuario usuarioCambiado = usuarioService.editUsuario(usuarioEditado);
 
-            if (usuarioModificar != null) {
+            if (usuarioCambiado != null) {
                 return new Gson().toJson(new StandardResponse(StatusResponse.SUCCESS,
-                        new Gson().toJsonTree(usuarioModificar))
+                        new Gson().toJsonTree(usuarioCambiado))
                 );
             } else {
                 return new Gson().toJson(new StandardResponse(StatusResponse.ERROR,
@@ -79,5 +71,83 @@ public class GestorIncidenciasMain {
             return new Gson().toJson(new StandardResponse(StatusResponse.SUCCESS,
                     "Usuario Borrado."));
         });
+
+        // Obtener todos los proyectos
+        get("/proyecto", (request, response) -> {
+            response.type("application/json");
+
+            return new Gson().toJson(new StandardResponse(StatusResponse.SUCCESS,
+                    new Gson().toJsonTree(proyectoService.getProyectos())));
+        });
+
+        // Obtener un proyecto por id
+        get("/proyecto/:id", (request, response) -> {
+            response.type("application/json");
+
+            return new Gson().toJson(new StandardResponse(StatusResponse.SUCCESS,
+                    new Gson().toJsonTree(proyectoService.getProyecto(Integer.parseInt(request.params(":id"))))));
+        });
+
+        // Crear un nuevo proyecto
+        post("/proyecto", (request, response) -> {
+            response.type("application/json");
+
+            Proyecto proyecto = new Gson().fromJson(request.body(), Proyecto.class);
+            proyectoService.addProyecto(proyecto);
+
+            return new Gson().toJson(new StandardResponse(StatusResponse.SUCCESS));
+        });
+
+        // Modificar proyecto
+        put("/proyecto", (request, response) -> {
+            response.type("application/json");
+
+            Proyecto proyectoEditado = new Gson().fromJson(request.body(), Proyecto.class);
+            Proyecto proyectoCambiado = proyectoService.editProyecto(proyectoEditado);
+
+            if (proyectoCambiado != null) {
+                return new Gson().toJson(new StandardResponse(StatusResponse.SUCCESS,
+                        new Gson().toJsonTree(proyectoCambiado)));
+            } else {
+                return new Gson().toJson(new StandardResponse(StatusResponse.ERROR,
+                        "Error al modificar proyecto."));
+            }
+        });
+
+        // Eliminar proyecto
+        delete("/proyecto/:id", (request, response) -> {
+            response.type("application/json");
+
+            proyectoService.deleteProyecto(Integer.parseInt(request.params(":id")));
+            return new Gson().toJson(new StandardResponse(StatusResponse.SUCCESS,
+                    "Proyecto Borrado."));
+        });
+    }
+
+    private static void setTestData() {
+        // Cargar Usuarios de Prueba
+        String[] nombres = {"Mauricio", "Juan", "Maria"};
+        String[] apellidos = {"Parra", "Gonzalez,", "Martinez"};
+
+        for (int i = 0; i < nombres.length; i++)
+        {
+            Usuario usuario = new Usuario();
+            usuario.setNombre(nombres[i]);
+            usuario.setApellido(apellidos[i]);
+
+            usuarioService.addUsuario(usuario);
+        }
+
+        // Cargar Proyectos de Prueba
+        String[] titulos = {"Proyecto de Prueba", "Proyecto Preliminar"};
+
+        for (int i = 0; i < titulos.length; i++)
+        {
+            Proyecto proyecto = new Proyecto();
+            proyecto.setTitulo(titulos[i]);
+            proyecto.setPropietario(usuarioService.getUsuario(i + 1));
+
+            proyectoService.addProyecto(proyecto);
+        }
     }
 }
