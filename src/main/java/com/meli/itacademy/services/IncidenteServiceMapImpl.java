@@ -6,6 +6,7 @@ import com.meli.itacademy.models.Incidente;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.HashMap;
 
 public class IncidenteServiceMapImpl implements IIncidenteService {
@@ -17,6 +18,16 @@ public class IncidenteServiceMapImpl implements IIncidenteService {
     }
 
     @Override
+    public Collection<Incidente> getIncidentes() {
+        return incidenteMapImpl.values();
+    }
+
+    @Override
+    public Incidente getIncidente(int id) {
+        return incidenteMapImpl.get(id);
+    }
+
+    @Override
     public void addIncidente(Incidente incidente) {
         incidente.setId(incidenteMapImpl.size() + 1);
         incidenteMapImpl.put(incidente.getId(), incidente);
@@ -25,7 +36,7 @@ public class IncidenteServiceMapImpl implements IIncidenteService {
     @Override
     public Incidente addDescripcion(int id, String descripcion) {
         Incidente incidente = incidenteMapImpl.get(id);
-        incidente.setDescripcion(descripcion);
+        incidente.setDescripcion(incidente.getDescripcion() + " | " + descripcion);
         return incidente;
     }
 

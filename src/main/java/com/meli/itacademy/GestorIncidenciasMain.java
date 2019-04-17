@@ -3,18 +3,17 @@ package com.meli.itacademy;
 import static spark.Spark.*;
 import com.google.gson.Gson;
 
+import com.meli.itacademy.models.ClasificacionEnum;
+import com.meli.itacademy.models.Incidente;
 import com.meli.itacademy.models.Proyecto;
 import com.meli.itacademy.models.Usuario;
 import com.meli.itacademy.server.ApiRouter;
 import com.meli.itacademy.server.StandardResponse;
 import com.meli.itacademy.server.StatusResponse;
-import com.meli.itacademy.services.ProyectoServiceMapImpl;
-import com.meli.itacademy.services.UsuarioServiceMapImpl;
+
+import java.time.LocalDateTime;
 
 public class GestorIncidenciasMain {
-
-    private static final UsuarioServiceMapImpl usuarioService = new UsuarioServiceMapImpl();
-    private static final ProyectoServiceMapImpl proyectoService = new ProyectoServiceMapImpl();
 
     public static void main(String[] args) {
         // Setup de datos iniciales
@@ -38,6 +37,14 @@ public class GestorIncidenciasMain {
                 put("", ApiRouter::editProyecto);
                 delete("/:id", ApiRouter::deleteProyecto);
 
+            });
+
+            path("/incidente", () -> {
+                get("", ApiRouter::getIncidentes);
+                get("/:id", ApiRouter::getIncidente);
+                post("", ApiRouter::addIncidente);
+                put("", ApiRouter::appendDescripcionIncidente);
+                options("", ApiRouter::solveIncidente);
             });
         });
 
@@ -75,11 +82,24 @@ public class GestorIncidenciasMain {
             ApiRouter.proyectoService.addProyecto(proyecto);
         }
 
-        System.out.println(ApiRouter.proyectoService.getProyecto(1).getPropietario().getNombre() + " " + ApiRouter.proyectoService.getProyecto(1).getPropietario().getApellido());
+        // Cargar Incidentes de Prueba
 
-        ApiRouter.usuarioService.getUsuario(1).setNombre("Marco");
-        ApiRouter.usuarioService.getUsuario(1).setApellido("Polo");
+        String[] descripciones = {"Problema para agregar Usuarios", "Problema al cargar vistas"};
+        ClasificacionEnum[] clasificaciones = {ClasificacionEnum.CRITICO, ClasificacionEnum.NORMAL};
+        LocalDateTime[] fechas = {null, LocalDateTime.now()};
 
-        System.out.println(ApiRouter.proyectoService.getProyecto(1).getPropietario().getNombre() + " " + ApiRouter.proyectoService.getProyecto(1).getPropietario().getApellido());
+        for (int i = 0; i < descripciones.length; i++)
+        {
+            Incidente incidente = new Incidente();
+            incidente.setClasificacion(clasificaciones[i]);
+            incidente.setDescripcion(descripciones[i]);
+            incidente.setProyecto(ApiRouter.proyectoService.getProyecto(1));
+            incidente.setReportador(ApiRouter.usuarioService.getUsuario(i + 1));
+            incidente.setResponsable(ApiRouter.usuarioService.getUsuario(3));
+            incidente.setFechaCreado(LocalDateTime.now());
+            incidente.setFechaCierre(fechas[i]);
+
+            ApiRouter.incidenteService.addIncidente(incidente);
+        }
     }
 }

@@ -8,6 +8,7 @@ public class Incidente {
     private int id;
     private ClasificacionEnum clasificacion;
     private String descripcion;
+    private Proyecto proyecto;
     private Usuario reportador;
     private Usuario responsable;
     private EstadoEnum estado;
@@ -36,6 +37,14 @@ public class Incidente {
 
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
+    }
+
+    public Proyecto getProyecto() {
+        return proyecto;
+    }
+
+    public void setProyecto(Proyecto proyecto) {
+        this.proyecto = proyecto;
     }
 
     public Usuario getReportador() {

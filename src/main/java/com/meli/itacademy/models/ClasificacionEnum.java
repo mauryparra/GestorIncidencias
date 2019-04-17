@@ -3,7 +3,7 @@ package com.meli.itacademy.models;
 public enum ClasificacionEnum {
 
     CRITICO ("Crítico"),
-    NORMAL ("Nomral"),
+    NORMAL ("Normal"),
     MENOR ("Menor");
 
     private String clasificacion;
