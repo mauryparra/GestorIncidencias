@@ -3,10 +3,7 @@ package com.meli.itacademy;
 import static spark.Spark.*;
 import com.google.gson.Gson;
 
-import com.meli.itacademy.models.ClasificacionEnum;
-import com.meli.itacademy.models.Incidente;
-import com.meli.itacademy.models.Proyecto;
-import com.meli.itacademy.models.Usuario;
+import com.meli.itacademy.models.*;
 import com.meli.itacademy.server.ApiRouter;
 import com.meli.itacademy.server.StandardResponse;
 import com.meli.itacademy.server.StatusResponse;
@@ -93,7 +90,8 @@ public class GestorIncidenciasMain {
             Incidente incidente = new Incidente();
             incidente.setClasificacion(clasificaciones[i]);
             incidente.setDescripcion(descripciones[i]);
-            incidente.setProyecto(ApiRouter.proyectoService.getProyecto(1));
+            incidente.setEstado(fechas[i] == null ? EstadoEnum.ASIGNADO : EstadoEnum.RESUELTO);
+            incidente.setProyecto(ApiRouter.proyectoService.getProyecto(i + 1));
             incidente.setReportador(ApiRouter.usuarioService.getUsuario(i + 1));
             incidente.setResponsable(ApiRouter.usuarioService.getUsuario(3));
             incidente.setFechaCreado(LocalDateTime.now());

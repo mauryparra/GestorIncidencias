@@ -1,6 +1,7 @@
 package com.meli.itacademy.server;
 
 import com.google.gson.Gson;
+import com.meli.itacademy.models.EstadoEnum;
 import com.meli.itacademy.models.Incidente;
 import com.meli.itacademy.models.Proyecto;
 import com.meli.itacademy.models.Usuario;
@@ -11,6 +12,7 @@ import spark.Request;
 import spark.Response;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.stream.Collectors;
 
 public abstract class ApiRouter {
@@ -112,18 +114,18 @@ public abstract class ApiRouter {
     public static String getProyectos(Request request, Response response) {
         response.type("application/json");
 
-        if (!request.queryParams().isEmpty()) {
-            if (!request.queryParams("propietario").isEmpty()) {
+        Collection<Proyecto> proyectos = proyectoService.getProyectos();
 
-                Proyecto[] proyectos = proyectoService.getProyectos().stream().filter(
-                        p -> p.getPropietario().getId() == Integer.parseInt(request.queryParams("propietario"))).toArray(Proyecto[]::new);
-                return new Gson().toJson(new StandardResponse(StatusResponse.SUCCESS,
-                        new Gson().toJsonTree(proyectos)));
+        if (!request.queryParams().isEmpty()) {
+            if (!request.queryParamOrDefault("propietario", "").equals("")) {
+
+                proyectos = proyectoService.getProyectos().stream().filter(
+                        p -> p.getPropietario().getId() == Integer.parseInt(request.queryParams("propietario"))).collect(Collectors.toList());
             }
         }
 
         return new Gson().toJson(new StandardResponse(StatusResponse.SUCCESS,
-                new Gson().toJsonTree(proyectoService.getProyectos())));
+                new Gson().toJsonTree(proyectos)));
     }
 
     /**
@@ -205,8 +207,38 @@ public abstract class ApiRouter {
     public static String getIncidentes(Request request, Response response) {
         response.type("application/json");
 
+        Collection<Incidente> incidentes = incidenteService.getIncidentes();
+
+        if (!request.queryParams().isEmpty()) {
+
+            if (!request.queryParamOrDefault("responsable", "").equals("")) {
+
+                incidentes = incidentes.stream().filter(
+                        i -> i.getResponsable().getId() == Integer.parseInt(request.queryParams("responsable"))).collect(Collectors.toList());
+            }
+
+            if (!request.queryParamOrDefault("reportador", "").equals("")) {
+
+                incidentes = incidentes.stream().filter(
+                        i -> i.getReportador().getId() == Integer.parseInt(request.queryParams("reportador"))).collect(Collectors.toList());
+            }
+
+            if (!request.queryParamOrDefault("proyecto", "").equals("")) {
+
+                incidentes = incidentes.stream().filter(
+                        i -> i.getProyecto().getId() == Integer.parseInt(request.queryParams("proyecto"))).collect(Collectors.toList());
+            }
+
+            if (!request.queryParamOrDefault("estado", "").equals("")) {
+
+                incidentes = incidentes.stream().filter(
+                        i -> (i.getEstado().toString().equalsIgnoreCase(request.queryParams("estado")))).collect(Collectors.toList());
+            }
+        }
+
+
         return new Gson().toJson(new StandardResponse(StatusResponse.SUCCESS,
-                new Gson().toJsonTree(incidenteService.getIncidentes())));
+                new Gson().toJsonTree(incidentes)));
     }
 
     /**
