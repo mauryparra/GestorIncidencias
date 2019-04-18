@@ -209,36 +209,42 @@ public abstract class ApiRouter {
 
         Collection<Incidente> incidentes = incidenteService.getIncidentes();
 
-        if (!request.queryParams().isEmpty()) {
+        try {
+            if (!request.queryParams().isEmpty()) {
 
-            if (!request.queryParamOrDefault("responsable", "").equals("")) {
+                if (!request.queryParamOrDefault("responsable", "").equals("")) {
 
-                incidentes = incidentes.stream().filter(
-                        i -> i.getResponsable().getId() == Integer.parseInt(request.queryParams("responsable"))).collect(Collectors.toList());
+                    incidentes = incidentes.stream().filter(
+                            i -> i.getResponsable().getId() == Integer.parseInt(request.queryParams("responsable"))).collect(Collectors.toList());
+                }
+
+                if (!request.queryParamOrDefault("reportador", "").equals("")) {
+
+                    incidentes = incidentes.stream().filter(
+                            i -> i.getReportador().getId() == Integer.parseInt(request.queryParams("reportador"))).collect(Collectors.toList());
+                }
+
+                if (!request.queryParamOrDefault("proyecto", "").equals("")) {
+
+                    incidentes = incidentes.stream().filter(
+                            i -> i.getProyecto().getId() == Integer.parseInt(request.queryParams("proyecto"))).collect(Collectors.toList());
+                }
+
+                if (!request.queryParamOrDefault("estado", "").equals("")) {
+
+                    incidentes = incidentes.stream().filter(
+                            i -> (i.getEstado().toString().equalsIgnoreCase(request.queryParams("estado")))).collect(Collectors.toList());
+                }
             }
 
-            if (!request.queryParamOrDefault("reportador", "").equals("")) {
+            return new Gson().toJson(new StandardResponse(StatusResponse.SUCCESS,
+                    new Gson().toJsonTree(incidentes)));
 
-                incidentes = incidentes.stream().filter(
-                        i -> i.getReportador().getId() == Integer.parseInt(request.queryParams("reportador"))).collect(Collectors.toList());
-            }
-
-            if (!request.queryParamOrDefault("proyecto", "").equals("")) {
-
-                incidentes = incidentes.stream().filter(
-                        i -> i.getProyecto().getId() == Integer.parseInt(request.queryParams("proyecto"))).collect(Collectors.toList());
-            }
-
-            if (!request.queryParamOrDefault("estado", "").equals("")) {
-
-                incidentes = incidentes.stream().filter(
-                        i -> (i.getEstado().toString().equalsIgnoreCase(request.queryParams("estado")))).collect(Collectors.toList());
-            }
+        } catch (NullPointerException e) {
+            System.out.println(e);
+            return new Gson().toJson(new StandardResponse(StatusResponse.ERROR,
+                    "Error al obtener incidentes"));
         }
-
-
-        return new Gson().toJson(new StandardResponse(StatusResponse.SUCCESS,
-                new Gson().toJsonTree(incidentes)));
     }
 
     /**
